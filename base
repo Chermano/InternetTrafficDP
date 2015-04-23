@@ -1,0 +1,44 @@
+#include <pcap.h>
+#include <string.h>
+#include <stdlib.h>
+
+
+
+
+void processPacket(u_char *arg, const struct pcap_pkthdr* pkthdr, const u_char * packet);
+
+int main(){
+	int i = 0;
+	int count = 0;
+	pcap_t *descr = NULL;
+	char errbuf[PCAP_ERRBUF_SIZE], *device = NULL;
+	memset (errbuf, 0, PCAP_ERRBUF_SIZE);
+
+	device = pcap_lookupdev(errbuf);
+
+	descr = pcap_open_live(device, 2048, 1, 512, errbuf);
+
+	pcap_loop(descr, 50, processPacket, (u_char *)&count);
+
+	return 0;
+}
+
+void processPacket(u_char *arg, const struct pcap_pkthdr* pkthdr, const u_char * packet){
+	int i = 0;
+	int *counter = (int*)arg;
+
+	printf("packet count: %d\n", ++(*counter));
+	printf("received packet size: %d\n", pkthdr->len);
+	/*printf("payload:\n");
+	for (i = 0; i<pkthdr->len; i++){
+
+		if (isprint(packet[i]) )
+			printf("%c", packet[i]);
+		else
+			printf(". ");
+
+		if (i%16 == 0 && i!=0 || i==pkthdr->len-1 )
+			printf("\n");
+	}*/
+	return;
+}
