@@ -1,4 +1,5 @@
 #include "stdio.h"
+#include "string.h"
 #include "winsock2.h"   //need winsock for inet_ntoa and ntohs methods
 
 #define HAVE_REMOTE
@@ -9,10 +10,6 @@
 
 //some packet processing functions
 void ProcessPacket(u_char*, int, int); //This will decide how to digest
-
-void PrintIpHeader(u_char*, int);
-void print_udp_packet(u_char*, int);
-void PrintTcpPacket(u_char*, int);
 void sortTCPpacket(u_char*, int);
 void sortUDPpacket(u_char*, int);
 int inarray(u_int);
@@ -126,22 +123,17 @@ int main()
 	u_int i, res, inum;
 	u_char errbuf[PCAP_ERRBUF_SIZE], buffer[100];
 	u_char *pkt_data;
-	time_t seconds;
 	struct tm tbreak;
 	pcap_if_t *alldevs, *d;
 	pcap_t *fp;
 	struct pcap_pkthdr *header;
 	struct bpf_program filtptr;		/* The compiled filter expression */
-	char filter_exp[] = "dst host 172.16.15.96";	/* The filter expression */
+	char filter_exp[24] = "dst host ";	/* The filter expression */
+	char filter_ip[15];
 	bpf_u_int32 mask;		/* The netmask of our sniffing device */
 	bpf_u_int32 net;		/* The IP of our sniffing device */
 
-	fopen_s(&logfile, "log.txt", "w");
 
-	if (logfile == NULL)
-	{
-		printf("Unable to create file.");
-	}
 
 	/* The user didn't provide a packet source: Retrieve the local device list */
 	if (pcap_findalldevs_ex(PCAP_SRC_IF_STRING, NULL, &alldevs, errbuf) == -1)
@@ -191,6 +183,13 @@ int main()
 		fprintf(stderr, "\nError opening adapter\n");
 		return -1;
 	}
+
+	printf("Please enter your IP: ");
+	scanf("%s", filter_ip);
+	strcat(filter_exp, filter_ip);
+
+
+
 	pcap_lookupnet(d, &net, &mask, errbuf);
 	if (pcap_compile(fp, &filtptr, filter_exp, 0, net) == -1) {
 		fprintf(stderr, "Couldn't parse filter %s: %s\n", filter_exp, pcap_geterr(fp));
@@ -209,12 +208,7 @@ int main()
 			// Timeout elapsed
 			continue;
 		}
-		//seconds = header->ts.tv_sec;
-		//localtime_s(&tbreak, &seconds);
-		//strftime(buffer, 80, "%d-%b-%Y %I:%M:%S %p", &tbreak);
-		//print pkt timestamp and pkt len
-		//fprintf(logfile , "\nNext Packet : %ld:%ld (Packet Length : %ld bytes) " , header->ts.tv_sec, header->ts.tv_usec, header->len);
-		fprintf(logfile, "\nNext Packet (Packet Length : %ld bytes ) ", header->len);
+		
 		ProcessPacket(pkt_data, header->caplen, header->len);
 	}
 
@@ -249,11 +243,6 @@ void ProcessPacket(u_char* Buffer, int Size, int pktlen)
 		case 17: //UDP Protocol
 			udp++;
 			sortUDPpacket(Buffer, pktlen);
-			//print_udp_packet(Buffer, Size);
-			break;
-
-		default: //Some Other Protocol like ARP etc.
-			others++;
 			break;
 		}
 	}
@@ -263,134 +252,8 @@ void ProcessPacket(u_char* Buffer, int Size, int pktlen)
 
 
 
-/*
-Print the IP header for IP packets
-*/
-void PrintIpHeader(unsigned char* Buffer, int Size)
-{
-	int iphdrlen = 0;
 
-	iphdr = (IPV4_HDR *)(Buffer + sizeof(ETHER_HDR));
-	iphdrlen = iphdr->ip_header_len * 4;
 
-	memset(&source, 0, sizeof(source));
-	source.sin_addr.s_addr = iphdr->ip_srcaddr;
-
-	memset(&dest, 0, sizeof(dest));
-	dest.sin_addr.s_addr = iphdr->ip_destaddr;
-
-	
-
-	fprintf(logfile, "\n");
-	fprintf(logfile, "IP Header\n");
-	/*fprintf(logfile, " |-IP Version : %d\n", (unsigned int)iphdr->ip_version);
-	fprintf(logfile, " |-IP Header Length : %d DWORDS or %d Bytes\n", (unsigned int)iphdr->ip_header_len, ((unsigned int)(iphdr->ip_header_len)) * 4);
-	fprintf(logfile, " |-Type Of Service : %d\n", (unsigned int)iphdr->ip_tos);
-	fprintf(logfile, " |-IP Total Length : %d Bytes(Size of Packet)\n", ntohs(iphdr->ip_total_length));
-	fprintf(logfile, " |-Identification : %d\n", ntohs(iphdr->ip_id));
-	fprintf(logfile, " |-Reserved ZERO Field : %d\n", (unsigned int)iphdr->ip_reserved_zero);
-	fprintf(logfile, " |-Dont Fragment Field : %d\n", (unsigned int)iphdr->ip_dont_fragment);
-	fprintf(logfile, " |-More Fragment Field : %d\n", (unsigned int)iphdr->ip_more_fragment);
-	fprintf(logfile, " |-TTL : %d\n", (unsigned int)iphdr->ip_ttl);*/
-	fprintf(logfile, " |-Protocol : %d\n", (unsigned int)iphdr->ip_protocol);
-	//fprintf(logfile, " |-Checksum : %d\n", ntohs(iphdr->ip_checksum));
-	fprintf(logfile, " |-Source IP : %s\n", inet_ntoa(source.sin_addr));
-	fprintf(logfile, " |-Destination IP : %s\n", inet_ntoa(dest.sin_addr));
-}
-
-/*
-Print the TCP header for TCP packets
-*/
-void PrintTcpPacket(u_char* Buffer, int Size)
-{
-	unsigned short iphdrlen;
-	int header_size = 0, tcphdrlen, data_size;
-
-	iphdr = (IPV4_HDR *)(Buffer + sizeof(ETHER_HDR));
-	iphdrlen = iphdr->ip_header_len * 4;
-
-	tcpheader = (TCP_HDR*)(Buffer + iphdrlen + sizeof(ETHER_HDR));
-	tcphdrlen = tcpheader->data_offset * 4;
-
-	data = (Buffer + sizeof(ETHER_HDR) + iphdrlen + tcphdrlen);
-	data_size = (Size - sizeof(ETHER_HDR) - iphdrlen - tcphdrlen);
-
-	fprintf(logfile, "\n\n***********************TCP Packet*************************\n");
-
-	PrintIpHeader(Buffer, Size);
-
-	/*fprintf(logfile, "\n");
-	fprintf(logfile, "TCP Header\n");
-	fprintf(logfile, " |-Source Port : %u\n", ntohs(tcpheader->source_port));
-	fprintf(logfile, " |-Destination Port : %u\n", ntohs(tcpheader->dest_port));
-	fprintf(logfile, " |-Sequence Number : %u\n", ntohl(tcpheader->sequence));
-	fprintf(logfile, " |-Acknowledge Number : %u\n", ntohl(tcpheader->acknowledge));
-	fprintf(logfile, " |-Header Length : %d DWORDS or %d BYTES\n", (unsigned int)tcpheader->data_offset, (unsigned int)tcpheader->data_offset * 4);
-	fprintf(logfile, " |-CWR Flag : %d\n", (unsigned int)tcpheader->cwr);
-	fprintf(logfile, " |-ECN Flag : %d\n", (unsigned int)tcpheader->ecn);
-	fprintf(logfile, " |-Urgent Flag : %d\n", (unsigned int)tcpheader->urg);
-	fprintf(logfile, " |-Acknowledgement Flag : %d\n", (unsigned int)tcpheader->ack);
-	fprintf(logfile, " |-Push Flag : %d\n", (unsigned int)tcpheader->psh);
-	fprintf(logfile, " |-Reset Flag : %d\n", (unsigned int)tcpheader->rst);
-	fprintf(logfile, " |-Synchronise Flag : %d\n", (unsigned int)tcpheader->syn);
-	fprintf(logfile, " |-Finish Flag : %d\n", (unsigned int)tcpheader->fin);
-	fprintf(logfile, " |-Window : %d\n", ntohs(tcpheader->window));
-	fprintf(logfile, " |-Checksum : %d\n", ntohs(tcpheader->checksum));
-	fprintf(logfile, " |-Urgent Pointer : %d\n", tcpheader->urgent_pointer);
-	fprintf(logfile, "\n");
-	fprintf(logfile, " DATA Dump ");
-	fprintf(logfile, "\n");
-
-	fprintf(logfile, "IP Header\n");
-	PrintData((u_char*)iphdr, iphdrlen);
-
-	fprintf(logfile, "TCP Header\n");
-	PrintData((u_char*)tcpheader, tcphdrlen);
-
-	fprintf(logfile, "Data Payload\n");
-	PrintData(data, data_size);
-
-	fprintf(logfile, "\n###########################################################\n");*/
-}
-
-/*
-Print the UDP header for UDP packets
-*/
-void print_udp_packet(u_char *Buffer, int Size)
-{
-	int iphdrlen = 0, data_size = 0;
-
-	iphdr = (IPV4_HDR *)(Buffer + sizeof(ETHER_HDR));
-	iphdrlen = iphdr->ip_header_len * 4;
-
-	udpheader = (UDP_HDR*)(Buffer + iphdrlen + sizeof(ETHER_HDR));
-
-	data = (Buffer + sizeof(ETHER_HDR) + iphdrlen + sizeof(UDP_HDR));
-	data_size = (Size - sizeof(ETHER_HDR) - iphdrlen - sizeof(UDP_HDR));
-
-	//fprintf(logfile, "\n\n***********************UDP Packet*************************\n");
-
-	PrintIpHeader(Buffer, Size);
-
-	/*fprintf(logfile, "\nUDP Header\n");
-	fprintf(logfile, " |-Source Port : %d\n", ntohs(udpheader->source_port));
-	fprintf(logfile, " |-Destination Port : %d\n", ntohs(udpheader->dest_port));
-	fprintf(logfile, " |-UDP Length : %d\n", ntohs(udpheader->udp_length));
-	fprintf(logfile, " |-UDP Checksum : %d\n", ntohs(udpheader->udp_checksum));
-
-	fprintf(logfile, "\n");
-
-	fprintf(logfile, "IP Header\n");
-	PrintData((u_char*)iphdr, iphdrlen);
-
-	fprintf(logfile, "UDP Header\n");
-	PrintData((u_char*)udpheader, sizeof(UDP_HDR));
-
-	fprintf(logfile, "Data Payload\n");
-	PrintData(data, data_size);
-
-	fprintf(logfile, "\n###########################################################\n");*/
-}
 
 
 void sortTCPpacket(u_char* Buffer, int size)
@@ -430,13 +293,14 @@ void sortUDPpacket(u_char* Buffer, int size)
 
 	iphdr = (IPV4_HDR *)(Buffer + sizeof(ETHER_HDR));
 	iphdrlen = iphdr->ip_header_len * 4;
+	udpheader = (UDP_HDR*)(Buffer + iphdrlen + sizeof(ETHER_HDR));
 
 	memset(&source, 0, sizeof(source));
 	source.sin_addr.s_addr = iphdr->ip_srcaddr;
 	srcaddr = inet_ntoa(source.sin_addr);
 
 
-	if ((size == 1514) || (size == 1434))
+	if (((size == 66) || (size == 76)) && ntohs(udpheader->source_port) != 53)
 	{
 		if (counter == 100)
 			return;
@@ -448,7 +312,7 @@ void sortUDPpacket(u_char* Buffer, int size)
 		}
 
 	}
-	else if (1)
+	else if ((ntohs(udpheader->source_port) > 1024) && (size >150) && (size < 300))
 	{
 		if (counter == 100)
 			return;
