@@ -1,0 +1,28 @@
+﻿Build started 5/12/2015 11:37:49 AM.
+     1>Project "C:\Users\Yevgeniy\documents\SeniorDesign\DP2\DP2\DP2.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /I..\WpdPack\Include /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D WPCAP /D HAVE_REMOTE /D _DEBUG /D _CONSOLE /D _LIB /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TC /analyze- /errorReport:prompt main.c
+         main.c
+     1>c:\users\yevgeniy\documents\seniordesign\dp2\dp2\main.c(5): warning C4005: 'HAVE_REMOTE' : macro redefinition
+                 command-line arguments :  see previous definition of 'HAVE_REMOTE'
+     1>c:\users\yevgeniy\documents\seniordesign\dp2\dp2\main.c(188): warning C4996: 'scanf': This function or variable may be unsafe. Consider using scanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 12.0\vc\include\stdio.h(283) : see declaration of 'scanf'
+     1>c:\users\yevgeniy\documents\seniordesign\dp2\dp2\main.c(189): warning C4996: 'strcat': This function or variable may be unsafe. Consider using strcat_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 12.0\vc\include\string.h(118) : see declaration of 'strcat'
+     1>c:\users\yevgeniy\documents\seniordesign\dp2\dp2\main.c(193): warning C4133: 'function' : incompatible types - from 'pcap_if_t *' to 'const char *'
+     1>c:\users\yevgeniy\documents\seniordesign\dp2\dp2\main.c(126): warning C4101: 'tbreak' : unreferenced local variable
+     1>c:\users\yevgeniy\documents\seniordesign\dp2\dp2\main.c(124): warning C4101: 'buffer' : unreferenced local variable
+     1>c:\users\yevgeniy\documents\seniordesign\dp2\dp2\main.c(269): warning C4047: '=' : 'u_char' differs in levels of indirection from 'char *'
+     1>c:\users\yevgeniy\documents\seniordesign\dp2\dp2\main.c(269): warning C4996: 'inet_ntoa': Use inet_ntop() or InetNtop() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
+                 c:\program files (x86)\windows kits\8.1\include\um\winsock2.h(1868) : see declaration of 'inet_ntoa'
+     1>c:\users\yevgeniy\documents\seniordesign\dp2\dp2\main.c(298): warning C4047: '=' : 'u_char' differs in levels of indirection from 'char *'
+     1>c:\users\yevgeniy\documents\seniordesign\dp2\dp2\main.c(298): warning C4996: 'inet_ntoa': Use inet_ntop() or InetNtop() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
+                 c:\program files (x86)\windows kits\8.1\include\um\winsock2.h(1868) : see declaration of 'inet_ntoa'
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Yevgeniy\documents\SeniorDesign\DP2\Debug\DP2.exe" /INCREMENTAL /NOLOGO /LIBPATH:..\WpdPack\Lib wpcap.lib Packet.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\Yevgeniy\documents\SeniorDesign\DP2\Debug\DP2.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Yevgeniy\documents\SeniorDesign\DP2\Debug\DP2.lib" /MACHINE:X86 Debug\main.obj
+         DP2.vcxproj -> C:\Users\Yevgeniy\documents\SeniorDesign\DP2\Debug\DP2.exe
+     1>Done Building Project "C:\Users\Yevgeniy\documents\SeniorDesign\DP2\DP2\DP2.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:00.85
